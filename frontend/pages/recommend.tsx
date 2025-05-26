@@ -24,43 +24,44 @@ export default function RecommendPage() {
   const [selectedPerfume, setSelectedPerfume] = useState<Perfume | null>(null);
   const [usePreTrainedModels, setUsePreTrainedModels] = useState(false);
 
-  useEffect(() => {
-    // Fetch recommendations
-    const fetchRecommendations = async (skipRankingCheck = false) => {
-      setIsLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const endpoint = skipRankingCheck 
-          ? `${process.env.NEXT_PUBLIC_API_URL}/api/recommend?skip_ranking_check=true` 
-          : `${process.env.NEXT_PUBLIC_API_URL}/api/recommend`;
-        
-        const response = await axios.get(endpoint, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setRecommendations(response.data);
-        setWarningMessage(skipRankingCheck ? 
-          'These recommendations are based on our pre-trained models. For more personalized recommendations, please rank some perfumes.' 
-          : '');
-      } catch (err: any) {
-        console.error('Error fetching recommendations:', err);
-        if (err.response?.status === 401) {
-          // Unauthorized, redirect to login
-          localStorage.removeItem('token');
-          router.push('/login');
-        } else if (err.response?.status === 400) {
-          // No rankings found
-          setError('You haven\'t ranked any perfumes yet.');
-          setUsePreTrainedModels(true); // Show option to use pre-trained models
-        } else {
-          setError('Failed to load recommendations. Please try again later.');
-        }
-      } finally {
-        setIsLoading(false);
+  // Move fetchRecommendations outside useEffect so it can be called from other functions
+  const fetchRecommendations = async (skipRankingCheck = false) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const endpoint = skipRankingCheck 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/recommend?skip_ranking_check=true` 
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/recommend`;
+      
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRecommendations(response.data);
+      setWarningMessage(skipRankingCheck ? 
+        'These recommendations are based on our pre-trained models. For more personalized recommendations, please rank some perfumes.' 
+        : '');
+    } catch (err: any) {
+      console.error('Error fetching recommendations:', err);
+      if (err.response?.status === 401) {
+        // Unauthorized, redirect to login
+        localStorage.removeItem('token');
+        router.push('/login');
+      } else if (err.response?.status === 400) {
+        // No rankings found
+        setError('You haven\'t ranked any perfumes yet.');
+        setUsePreTrainedModels(true); // Show option to use pre-trained models
+      } else {
+        setError('Failed to load recommendations. Please try again later.');
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    // Fetch recommendations on component mount
     fetchRecommendations();
   }, []);
 

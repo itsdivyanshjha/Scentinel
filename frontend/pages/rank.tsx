@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Header from '@/components/Header';
-import PerfumeCard from '@/components/PerfumeCard';
 
 type Perfume = {
   _id: string;
@@ -23,27 +21,56 @@ export default function RankPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Helper function to extract ObjectId string
+  const getObjectIdString = (id: any): string => {
+    if (typeof id === 'string') return id;
+    if (id && id.$oid) return id.$oid;
+    return String(id);
+  };
 
   useEffect(() => {
-    // Fetch perfumes to rank
     const fetchPerfumes = async () => {
       setIsLoading(true);
+      setDebugInfo('Starting to fetch perfumes...');
+      
       try {
         const token = localStorage.getItem('token');
+        setDebugInfo(`Token found: ${token ? 'Yes' : 'No'}`);
+        
+        if (!token) {
+          setError('Please log in to rank perfumes.');
+          router.push('/login');
+          return;
+        }
+
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/perfumes/list`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setPerfumes(response.data);
+        
+        setDebugInfo(`API Response: ${response.status}, Data length: ${response.data?.length || 0}`);
+        
+        if (response.data && Array.isArray(response.data)) {
+          setPerfumes(response.data);
+          setDebugInfo(`Successfully loaded ${response.data.length} perfumes`);
+        } else {
+          setError('Invalid response format from server');
+          setDebugInfo('Invalid response format');
+        }
       } catch (err: any) {
         console.error('Error fetching perfumes:', err);
+        setDebugInfo(`Error: ${err.message}, Status: ${err.response?.status}`);
+        
         if (err.response?.status === 401) {
-          // Unauthorized, redirect to login
           localStorage.removeItem('token');
           router.push('/login');
         } else {
-          setError('Failed to load perfumes. Please try again later.');
+          setError(`Failed to load perfumes: ${err.response?.data?.error || err.message}`);
         }
       } finally {
         setIsLoading(false);
@@ -51,16 +78,39 @@ export default function RankPage() {
     };
 
     fetchPerfumes();
-  }, []);
+  }, [router]);
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+    setDraggedIndex(index);
+  };
 
-    const items = Array.from(perfumes);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
 
-    setPerfumes(items);
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    
+    if (dragIndex !== dropIndex) {
+      const items = Array.from(perfumes);
+      const [reorderedItem] = items.splice(dragIndex, 1);
+      items.splice(dropIndex, 0, reorderedItem);
+      setPerfumes(items);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleSubmitRankings = async () => {
@@ -70,8 +120,8 @@ export default function RankPage() {
     try {
       const token = localStorage.getItem('token');
       const rankings = perfumes.map((perfume, index) => ({
-        perfume_id: perfume._id,
-        rank: index + 1, // 1-based ranking (1 is highest)
+        perfume_id: getObjectIdString(perfume._id),
+        rank: index + 1,
       }));
       
       await axios.post(
@@ -85,8 +135,6 @@ export default function RankPage() {
       );
       
       setSubmitSuccess(true);
-      
-      // Redirect to recommendations after 2 seconds
       setTimeout(() => {
         router.push('/recommend');
       }, 2000);
@@ -94,7 +142,6 @@ export default function RankPage() {
     } catch (err: any) {
       console.error('Error submitting rankings:', err);
       if (err.response?.status === 401) {
-        // Unauthorized, redirect to login
         localStorage.removeItem('token');
         router.push('/login');
       } else {
@@ -113,7 +160,7 @@ export default function RankPage() {
       
       <Header />
       
-      <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Rank Your Perfumes</h1>
           <p className="mt-2 text-gray-600">
@@ -135,58 +182,79 @@ export default function RankPage() {
         
         {isLoading ? (
           <div className="flex justify-center my-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        ) : perfumes.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No perfumes available for ranking.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
           </div>
         ) : (
           <>
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="perfumes" direction="vertical">
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-4"
-                  >
-                    {perfumes.map((perfume, index) => (
-                      <Draggable key={perfume._id} draggableId={perfume._id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="relative"
-                          >
-                            <div className="flex items-center">
-                              <div className="mr-4 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold">
-                                {index + 1}
-                              </div>
-                              <div className="flex-1">
-                                <PerfumeCard 
-                                  perfume={perfume} 
-                                  isDragging={snapshot.isDragging} 
-                                />
-                              </div>
-                              <div className="ml-4 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
+            <div className="space-y-3">
+              {perfumes.map((perfume, index) => (
+                <div
+                  key={getObjectIdString(perfume._id)}
+                  className={`
+                    flex items-center p-4 bg-white rounded-lg border-2 transition-all duration-200 cursor-move
+                    ${draggedIndex === index ? 'border-blue-400 shadow-lg scale-105 opacity-50' : 
+                      dragOverIndex === index ? 'border-green-400 bg-green-50' :
+                      'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                  `}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                >
+                  {/* Rank Number */}
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">
+                    {index + 1}
                   </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                  
+                  {/* Perfume Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      {perfume.name || 'Unknown Perfume'}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-1">
+                      {perfume.brand || 'Unknown Brand'}
+                    </p>
+                    
+                    {perfume.gender && (
+                      <span className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                        {perfume.gender.charAt(0).toUpperCase() + perfume.gender.slice(1)}
+                      </span>
+                    )}
+                    
+                    {perfume.notes && (
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                        <span className="font-medium">Notes:</span> {perfume.notes}
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Drag Handle */}
+                  <div className="flex-shrink-0 ml-4 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </div>
+                </div>
+              ))}
+            </div>
             
             <div className="mt-8 flex justify-center">
               <button
                 onClick={handleSubmitRankings}
                 disabled={isSubmitting || submitSuccess}
-                className="btn-primary px-6 py-3 flex items-center space-x-2"
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isSubmitting ? (
                   <>
