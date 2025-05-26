@@ -5,7 +5,6 @@
 [![React](https://img.shields.io/badge/React-18.0+-61DAFB.svg)](https://reactjs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4.4+-green.svg)](https://mongodb.com)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://docker.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -262,7 +261,7 @@ Ensure you have the following installed:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/Scentinel.git
+   git clone https://github.com/itsdivyanshjha/Scentinel.git
    cd Scentinel
    ```
 
@@ -460,11 +459,6 @@ We welcome contributions to improve Scentinel! Here's how you can help:
 - 📱 **Mobile Responsiveness**: Better mobile user experience
 - 🌐 **Internationalization**: Multi-language support
 
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -481,9 +475,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, issues, or contributions:
 
-- 📧 **Email**: [your-email@example.com]
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/Scentinel/issues)
-- 📖 **Documentation**: [Project Wiki](https://github.com/yourusername/Scentinel/wiki)
+- 📧 **Email**: [jhadivyansh29@gmail.com]
+- 🐛 **Issues**: [GitHub Issues](https://github.com/itsdivyanshjha/Scentinel/issues)
+- 📖 **Documentation**: [Project Wiki](https://github.com/itsdivyanshjha/Scentinel/tree/main/documentation)
 
 ---
 
