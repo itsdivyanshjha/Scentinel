@@ -16,8 +16,21 @@ def get_perfumes_to_rank():
         pipeline = [{"$sample": {"size": 10}}]
         perfumes = list(mongo.db.perfumes.aggregate(pipeline))
         
+        # Transform field names to lowercase for frontend compatibility
+        transformed_perfumes = []
+        for perfume in perfumes:
+            transformed = {
+                '_id': perfume['_id'],
+                'name': perfume.get('Name', perfume.get('name', '')),
+                'brand': perfume.get('Brand', perfume.get('brand', '')),
+                'notes': perfume.get('Notes', perfume.get('notes', '')),
+                'description': perfume.get('Description', perfume.get('description', '')),
+                'image_url': perfume.get('Image URL', perfume.get('image_url', ''))
+            }
+            transformed_perfumes.append(transformed)
+        
         # Format the response
-        formatted_perfumes = json.loads(dumps(perfumes))
+        formatted_perfumes = json.loads(dumps(transformed_perfumes))
         
         return jsonify(formatted_perfumes), 200
     except Exception as e:

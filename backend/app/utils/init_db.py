@@ -10,11 +10,17 @@ def clean_data(df):
     # Fill missing values
     df = df.fillna('')
     
-    # Convert text columns to lowercase
-    text_columns = ['name', 'brand', 'notes', 'description']
-    for col in text_columns:
-        if col in df.columns:
-            df[col] = df[col].str.lower()
+    # Rename columns to lowercase to match frontend expectations
+    column_mapping = {
+        'Name': 'name',
+        'Brand': 'brand', 
+        'Notes': 'notes',
+        'Description': 'description',
+        'Image URL': 'image_url'
+    }
+    
+    # Rename columns if they exist
+    df = df.rename(columns=column_mapping)
     
     return df
 

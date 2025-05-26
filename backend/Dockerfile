@@ -7,9 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Make entrypoint script executable
-RUN chmod +x entrypoint.sh
+# Make entrypoint script executable with more explicit permissions
+RUN chmod 755 entrypoint.sh
 
 EXPOSE 5000
 
-CMD ["./entrypoint.sh"]
+# Use sh to execute the script instead of relying on execute permissions
+CMD ["sh", "./entrypoint.sh"]
