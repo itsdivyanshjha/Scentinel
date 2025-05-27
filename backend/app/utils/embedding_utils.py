@@ -53,8 +53,17 @@ def generate_embeddings_from_csv():
                 doc.extend(preprocess_text(row[col]))
         corpus.append(doc)
     
-    # Train Word2Vec model
-    w2v_model = Word2Vec(sentences=corpus, vector_size=300, window=5, min_count=1, workers=4)
+    # Filter out empty documents
+    corpus = [doc for doc in corpus if len(doc) > 0]
+    
+    if not corpus:
+        print("Warning: No valid documents for Word2Vec training")
+        return {}
+    
+    # Train Word2Vec model with explicit build_vocab step
+    w2v_model = Word2Vec(vector_size=300, window=5, min_count=1, workers=4)
+    w2v_model.build_vocab(corpus)
+    w2v_model.train(corpus, total_examples=len(corpus), epochs=10)
     
     # Generate embeddings for each perfume
     perfume_embeddings = {}
@@ -79,15 +88,8 @@ def generate_embeddings_from_csv():
         if word_count > 0:
             embedding /= word_count
         
-        # Add one-hot encoded categorical features
-        if 'gender' in df.columns:
-            gender = row.get('gender', '')
-            if gender == 'men':
-                embedding = np.append(embedding, [1, 0, 0])
-            elif gender == 'women':
-                embedding = np.append(embedding, [0, 1, 0])
-            else:
-                embedding = np.append(embedding, [0, 0, 1])  # Unisex or other
+        # Keep embedding at 300 dimensions for model compatibility
+        # Gender information is already captured in the text features
         
         perfume_embeddings[perfume_id] = embedding
     
@@ -110,8 +112,8 @@ def generate_embeddings_from_db():
     # Prepare text corpus for Word2Vec
     corpus = []
     
-    # Extract text features
-    text_fields = ['notes', 'description', 'brand']
+    # Extract text features - check for both field name variations
+    text_fields = ['Notes', 'notes', 'Description', 'description', 'Brand', 'brand']
     for perfume in perfumes:
         doc = []
         for field in text_fields:
@@ -119,14 +121,23 @@ def generate_embeddings_from_db():
                 doc.extend(preprocess_text(perfume[field]))
         corpus.append(doc)
     
-    # Train Word2Vec model
-    w2v_model = Word2Vec(sentences=corpus, vector_size=300, window=5, min_count=1, workers=4)
+    # Filter out empty documents
+    corpus = [doc for doc in corpus if len(doc) > 0]
+    
+    if not corpus:
+        print("Warning: No valid documents for Word2Vec training from database")
+        return {}
+    
+    # Train Word2Vec model with explicit build_vocab step
+    w2v_model = Word2Vec(vector_size=300, window=5, min_count=1, workers=4)
+    w2v_model.build_vocab(corpus)
+    w2v_model.train(corpus, total_examples=len(corpus), epochs=10)
     
     # Generate embeddings for each perfume
     perfume_embeddings = {}
     
     for perfume in perfumes:
-        perfume_id = perfume['_id']
+        perfume_id = str(perfume['_id'])  # Convert ObjectId to string for consistent mapping
         
         # Initialize embedding vector
         embedding = np.zeros(300)
@@ -145,15 +156,8 @@ def generate_embeddings_from_db():
         if word_count > 0:
             embedding /= word_count
         
-        # Add one-hot encoded categorical features
-        if 'gender' in perfume:
-            gender = perfume.get('gender', '')
-            if gender == 'men':
-                embedding = np.append(embedding, [1, 0, 0])
-            elif gender == 'women':
-                embedding = np.append(embedding, [0, 1, 0])
-            else:
-                embedding = np.append(embedding, [0, 0, 1])  # Unisex or other
+        # Keep embedding at 300 dimensions for model compatibility
+        # Gender information is already captured in the text features
         
         perfume_embeddings[perfume_id] = embedding
     

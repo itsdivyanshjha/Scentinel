@@ -211,9 +211,12 @@ class BayesianPersonalizedRanking:
         for iteration in range(n_iterations):
             np.random.shuffle(positive_pairs)
             for pos_idx, neg_idx in positive_pairs:
-                # Calculate scores
-                pos_score = np.dot(features[pos_idx], self.item_embeddings[pos_idx]) + self.item_biases[pos_idx]
-                neg_score = np.dot(features[neg_idx], self.item_embeddings[neg_idx]) + self.item_biases[neg_idx]
+                # Calculate scores using feature subset to match embedding dimensions
+                pos_feature = features[pos_idx][:self.embedding_dim] if len(features[pos_idx]) >= self.embedding_dim else np.pad(features[pos_idx], (0, max(0, self.embedding_dim - len(features[pos_idx]))))
+                neg_feature = features[neg_idx][:self.embedding_dim] if len(features[neg_idx]) >= self.embedding_dim else np.pad(features[neg_idx], (0, max(0, self.embedding_dim - len(features[neg_idx]))))
+                
+                pos_score = np.dot(pos_feature, self.item_embeddings[pos_idx]) + self.item_biases[pos_idx]
+                neg_score = np.dot(neg_feature, self.item_embeddings[neg_idx]) + self.item_biases[neg_idx]
                 
                 # Calculate sigmoid of difference
                 diff = pos_score - neg_score
@@ -223,8 +226,8 @@ class BayesianPersonalizedRanking:
                 grad = 1.0 - sigmoid
                 
                 # Update embeddings with gradient descent
-                self.item_embeddings[pos_idx] += self.learning_rate * (grad * features[pos_idx] - self.reg * self.item_embeddings[pos_idx])
-                self.item_embeddings[neg_idx] += self.learning_rate * (-grad * features[neg_idx] - self.reg * self.item_embeddings[neg_idx])
+                self.item_embeddings[pos_idx] += self.learning_rate * (grad * pos_feature - self.reg * self.item_embeddings[pos_idx])
+                self.item_embeddings[neg_idx] += self.learning_rate * (-grad * neg_feature - self.reg * self.item_embeddings[neg_idx])
                 
                 # Update biases
                 self.item_biases[pos_idx] += self.learning_rate * (grad - self.reg * self.item_biases[pos_idx])
@@ -243,10 +246,12 @@ class BayesianPersonalizedRanking:
         
         for i in range(len(features)):
             # For each item, calculate similarity with all training items
-            similarities = np.dot(features[i], self.item_embeddings.T)
+            # Use only the first embedding_dim features to match embedding dimensions
+            feature_subset = features[i][:self.embedding_dim] if len(features[i]) >= self.embedding_dim else np.pad(features[i], (0, max(0, self.embedding_dim - len(features[i]))))
+            similarities = np.dot(feature_subset, self.item_embeddings.T)
             
             # Get weighted average of item biases
-            norm_similarities = similarities / (np.sum(similarities) + 1e-10)
+            norm_similarities = similarities / (np.sum(np.abs(similarities)) + 1e-10)
             scores[i] = np.sum(norm_similarities * self.item_biases)
             
         return scores 

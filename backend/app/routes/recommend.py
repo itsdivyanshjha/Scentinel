@@ -20,6 +20,8 @@ def get_recommendations():
         # Get query parameters
         top_n = request.args.get('limit', 10, type=int)
         skip_ranking_check = request.args.get('skip_ranking_check', 'false').lower() == 'true'
+        enable_diversity = request.args.get('enable_diversity', 'true').lower() == 'true'
+        diversity_weight = request.args.get('diversity_weight', 0.3, type=float)
         
         if not rankings and not skip_ranking_check:
             # Return a friendly message, but also allow the frontend to ignore this
@@ -30,43 +32,61 @@ def get_recommendations():
             }), 400
             
         # Generate recommendations using the ML models
-        perfume_ids = generate_recommendations(user_id, top_n=top_n)
+        perfume_ids = generate_recommendations(user_id, top_n=top_n, enable_diversity=enable_diversity, diversity_weight=diversity_weight)
         
         # Fetch perfume details for recommended perfumes
         recommended_perfumes = []
         for perfume_id in perfume_ids:
             perfume = mongo.db.perfumes.find_one({'_id': perfume_id})
             if perfume:
-                recommended_perfumes.append(perfume)
+                # Transform field names to match frontend expectations
+                transformed = {
+                    '_id': str(perfume['_id']),
+                    'name': perfume.get('Name', perfume.get('name', '')),
+                    'brand': perfume.get('Brand', perfume.get('brand', '')),
+                    'notes': perfume.get('Notes', perfume.get('notes', '')),
+                    'description': perfume.get('Description', perfume.get('description', '')),
+                    'image_url': perfume.get('Image URL', perfume.get('image_url', '')),
+                    'gender': perfume.get('Gender', perfume.get('gender', ''))
+                }
+                recommended_perfumes.append(transformed)
                 
         # Format response
-        formatted_perfumes = json.loads(dumps(recommended_perfumes))
-        
-        return jsonify(formatted_perfumes), 200
+        return jsonify(recommended_perfumes), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @recommend_bp.route('/cold-start', methods=['GET'])
-def get_cold_start_recommendations():
+def cold_start_recommendations():
     """Get recommendations for new users (no authentication required)"""
     try:
         # Get query parameters
         top_n = request.args.get('limit', 10, type=int)
+        enable_diversity = request.args.get('enable_diversity', 'true').lower() == 'true'
+        diversity_weight = request.args.get('diversity_weight', 0.3, type=float)
         
         # Generate recommendations using pre-trained models
-        perfume_ids = get_cold_start_recommendations(top_n=top_n)
+        perfume_ids = get_cold_start_recommendations(top_n=top_n, enable_diversity=enable_diversity, diversity_weight=diversity_weight)
         
         # Fetch perfume details for recommended perfumes
         recommended_perfumes = []
         for perfume_id in perfume_ids:
             perfume = mongo.db.perfumes.find_one({'_id': perfume_id})
             if perfume:
-                recommended_perfumes.append(perfume)
+                # Transform field names to match frontend expectations
+                transformed = {
+                    '_id': str(perfume['_id']),
+                    'name': perfume.get('Name', perfume.get('name', '')),
+                    'brand': perfume.get('Brand', perfume.get('brand', '')),
+                    'notes': perfume.get('Notes', perfume.get('notes', '')),
+                    'description': perfume.get('Description', perfume.get('description', '')),
+                    'image_url': perfume.get('Image URL', perfume.get('image_url', '')),
+                    'gender': perfume.get('Gender', perfume.get('gender', ''))
+                }
+                recommended_perfumes.append(transformed)
                 
         # Format response
-        formatted_perfumes = json.loads(dumps(recommended_perfumes))
-        
-        return jsonify(formatted_perfumes), 200
+        return jsonify(recommended_perfumes), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -91,16 +111,23 @@ def get_popular_perfumes():
         for item in popular_perfumes:
             perfume = mongo.db.perfumes.find_one({'_id': item['_id']})
             if perfume:
-                # Add popularity metrics
-                perfume['popularity'] = {
-                    'ranking_count': item['count'],
-                    'average_rank': item['avg_rank']
+                # Transform field names to match frontend expectations
+                transformed = {
+                    '_id': str(perfume['_id']),
+                    'name': perfume.get('Name', perfume.get('name', '')),
+                    'brand': perfume.get('Brand', perfume.get('brand', '')),
+                    'notes': perfume.get('Notes', perfume.get('notes', '')),
+                    'description': perfume.get('Description', perfume.get('description', '')),
+                    'image_url': perfume.get('Image URL', perfume.get('image_url', '')),
+                    'gender': perfume.get('Gender', perfume.get('gender', '')),
+                    'popularity': {
+                        'ranking_count': item['count'],
+                        'average_rank': item['avg_rank']
+                    }
                 }
-                recommended_perfumes.append(perfume)
+                recommended_perfumes.append(transformed)
                 
         # Format response
-        formatted_perfumes = json.loads(dumps(recommended_perfumes))
-        
-        return jsonify(formatted_perfumes), 200
+        return jsonify(recommended_perfumes), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500 
