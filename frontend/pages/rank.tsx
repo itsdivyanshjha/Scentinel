@@ -162,8 +162,8 @@ export default function RankPage() {
       
       <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Rank Your Perfumes</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Rank Your Perfumes</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Drag and drop the perfumes to rank them from 1 (most liked) to 10 (least liked).
           </p>
         </div>
@@ -186,7 +186,7 @@ export default function RankPage() {
           </div>
         ) : perfumes.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No perfumes available for ranking.</p>
+            <p className="text-gray-500 dark:text-gray-400">No perfumes available for ranking.</p>
             <button 
               onClick={() => window.location.reload()} 
               className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"

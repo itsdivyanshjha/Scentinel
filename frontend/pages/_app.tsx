@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Token check function
 const useAuth = () => {
@@ -41,5 +42,9 @@ export default function App({ Component, pageProps }: AppProps) {
     );
   }
 
-  return <Component {...pageProps} />;
+  return (
+    <ThemeProvider>
+      <Component {...pageProps} />
+    </ThemeProvider>
+  );
 } 

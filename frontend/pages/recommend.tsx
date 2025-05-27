@@ -12,6 +12,7 @@ type Perfume = {
   notes?: string;
   gender?: string;
   description?: string;
+  image_url?: string;
   [key: string]: any;
 };
 
@@ -93,8 +94,8 @@ export default function RecommendPage() {
       
       <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Your Perfume Recommendations</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Your Perfume Recommendations</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Based on your preferences, we think you'll love these perfumes.
           </p>
         </div>
@@ -152,7 +153,7 @@ export default function RecommendPage() {
         
         {recommendations.length === 0 && !isLoading && !error && (
           <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-lg text-gray-600 mb-4">No recommendations available. Try ranking some perfumes first!</p>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">No recommendations available. Try ranking some perfumes first!</p>
             <button 
               onClick={goToRankPage}
               className="btn-primary"
@@ -165,13 +166,28 @@ export default function RecommendPage() {
         {/* Detailed perfume modal */}
         {selectedPerfume && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-start">
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedPerfume.name}</h2>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{selectedPerfume.name}</h2>
+                    <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">{selectedPerfume.brand}</p>
+                  </div>
+                  {selectedPerfume.image_url && (
+                    <div className="ml-4 flex-shrink-0">
+                      <img 
+                        src={selectedPerfume.image_url} 
+                        alt={`${selectedPerfume.name} by ${selectedPerfume.brand}`}
+                        className="w-20 h-28 object-contain rounded-md"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                   <button 
                     onClick={closeModal}
-                    className="text-gray-400 hover:text-gray-500"
+                    className="ml-4 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                   >
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -179,12 +195,10 @@ export default function RecommendPage() {
                   </button>
                 </div>
                 
-                <p className="text-lg text-gray-600 mt-1">{selectedPerfume.brand}</p>
-                
                 {selectedPerfume.gender && (
                   <div className="mt-4">
-                    <span className="text-sm font-semibold text-gray-700">Gender: </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Gender: </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {selectedPerfume.gender.charAt(0).toUpperCase() + selectedPerfume.gender.slice(1)}
                     </span>
                   </div>
@@ -192,15 +206,15 @@ export default function RecommendPage() {
                 
                 {selectedPerfume.notes && (
                   <div className="mt-4">
-                    <h3 className="text-sm font-semibold text-gray-700">Notes:</h3>
-                    <p className="text-sm text-gray-600 mt-1">{selectedPerfume.notes}</p>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Notes:</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedPerfume.notes}</p>
                   </div>
                 )}
                 
                 {selectedPerfume.description && (
                   <div className="mt-4">
-                    <h3 className="text-sm font-semibold text-gray-700">Description:</h3>
-                    <p className="text-sm text-gray-600 mt-1">{selectedPerfume.description}</p>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Description:</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedPerfume.description}</p>
                   </div>
                 )}
                 
