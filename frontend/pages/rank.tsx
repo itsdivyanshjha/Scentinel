@@ -234,7 +234,7 @@ export default function RankPage() {
                     )}
                     
                     {perfume.notes && (
-                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                      <p className="text-sm text-gray-500 mt-2 line-clamp-2">
                         <span className="font-medium">Notes:</span> {perfume.notes}
                       </p>
                     )}
