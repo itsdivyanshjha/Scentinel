@@ -21,7 +21,6 @@ export default function RankPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [debugInfo, setDebugInfo] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -35,11 +34,9 @@ export default function RankPage() {
   useEffect(() => {
     const fetchPerfumes = async () => {
       setIsLoading(true);
-      setDebugInfo('Starting to fetch perfumes...');
       
       try {
         const token = localStorage.getItem('token');
-        setDebugInfo(`Token found: ${token ? 'Yes' : 'No'}`);
         
         if (!token) {
           setError('Please log in to rank perfumes.');
@@ -53,18 +50,13 @@ export default function RankPage() {
           },
         });
         
-        setDebugInfo(`API Response: ${response.status}, Data length: ${response.data?.length || 0}`);
-        
         if (response.data && Array.isArray(response.data)) {
           setPerfumes(response.data);
-          setDebugInfo(`Successfully loaded ${response.data.length} perfumes`);
         } else {
           setError('Invalid response format from server');
-          setDebugInfo('Invalid response format');
         }
       } catch (err: any) {
         console.error('Error fetching perfumes:', err);
-        setDebugInfo(`Error: ${err.message}, Status: ${err.response?.status}`);
         
         if (err.response?.status === 401) {
           localStorage.removeItem('token');

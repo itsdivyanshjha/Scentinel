@@ -1,0 +1,87 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Virtual environments
+venv
+env
+ENV
+.venv
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files - AGGRESSIVE EXCLUSION
+.DS_Store
+.DS_Store?
+._*
+**/._*
+**/__*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Git files
+.git
+.gitignore
+
+# Logs
+logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Model files and caches
+*.pkl
+*.joblib
+models/
+cache/
+
+# Exclude any file starting with dot-underscore (macOS resource forks)
+._*
+app/._*
+routes/._*
+services/._*
+
+# Backup and swap files
+*~
+.swp
+.tmp 

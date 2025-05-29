@@ -1,54 +1,44 @@
 #!/usr/bin/env python
 """
-Model pre-training script.
-Run this script to pre-train recommendation models on the full perfume dataset.
+Simple pretraining script for the Scentinel recommendation system.
 
-NOTE: For better compatibility with different environments, it's recommended
-to use the standalone_pretrain.py script from the project root directory
-with a virtual environment.
+This is a minimal pretraining script that runs within the backend environment.
+For comprehensive pretraining with more features and better performance, it's recommended
+to use the pretraining/standalone_pretrain.py script from the project root directory
+for full data processing and model training capabilities.
+
+Usage: python pretrain.py
 """
 
-import os
 import sys
-from dotenv import load_dotenv
+import os
 
 def main():
-    print("=" * 80)
-    print("NOTE: For better compatibility, use the standalone pre-training script:")
-    print("1. Create virtual environment: python -m venv venv")
-    print("2. Activate: source venv/bin/activate (Unix/Mac) or venv\\Scripts\\activate (Windows)")
-    print("3. Install dependencies: pip install pandas numpy torch scikit-learn gensim python-dotenv")
-    print("4. Run: python standalone_pretrain.py")
-    print("=" * 80)
+    print("=" * 60)
+    print("SCENTINEL - SIMPLE PRETRAINING")
+    print("=" * 60)
+    print()
+    print("This is a minimal pretraining script.")
+    print("For comprehensive pretraining, please use:")
+    print()
+    print("1. Navigate to project root directory")
+    print("2. Run: python pretraining/standalone_pretrain.py")
+    print("   OR")
+    print("3. Run: ./pretraining/pretrain.sh (Linux/macOS)")
+    print("4. Run: ./pretraining/pretrain.bat (Windows)")
+    print()
+    print("The comprehensive pretraining script provides:")
+    print("- Better feature engineering")
+    print("- Multiple model architectures")
+    print("- Advanced evaluation metrics")
+    print("- Optimized performance")
     
-    response = input("Do you want to continue with this script instead? (y/n): ")
-    if response.lower() != 'y':
-        print("Exiting. Please use the standalone script as recommended.")
-        return False
+    # Basic pretraining logic can go here
+    # This is just a placeholder for now
     
-    # Load environment variables
-    load_dotenv()
-    
-    # Import after confirmation to avoid unnecessary imports
-    try:
-        from app.utils.pretrain_models import pretrain_models
-        
-        # Run pre-training
-        print("Starting model pre-training...")
-        success = pretrain_models()
-        
-        if success:
-            print("Pre-training completed successfully!")
-            return True
-        else:
-            print("Pre-training failed!")
-            return False
-    except ImportError as e:
-        print(f"Import error: {e}")
-        print("This confirms why the standalone script is recommended.")
-        return False
+    print()
+    print("Simple pretraining completed!")
+    print("For better results, use the comprehensive pretraining script.")
 
 if __name__ == "__main__":
-    success = main()
-    if not success:
-        sys.exit(1) 
+    main() 

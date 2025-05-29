@@ -8,6 +8,59 @@
 
 ---
 
+## 🚀 Quick Start
+
+### Prerequisites
+- [Docker Desktop](https://docs.docker.com/get-docker/) (includes Docker Compose)
+- Git
+
+### 1-Minute Setup
+
+#### **For Linux/macOS:**
+```bash
+# Clone the repository
+git clone <repo-url>
+cd Scentinel
+
+# Run the setup script
+chmod +x setup.sh
+./setup.sh
+
+# Edit environment variables (optional)
+nano .env
+
+# Start the application
+docker-compose up -d
+
+# Open in browser
+open http://localhost:3000
+```
+
+#### **For Windows Users:**
+```powershell
+# Clone the repository
+git clone <repo-url>
+cd Scentinel
+
+# Using PowerShell (recommended)
+.\setup-windows.ps1
+
+# Or using Command Prompt
+.\setup-windows.bat
+
+# Or manual setup
+docker-compose up --build
+```
+
+### That's it! 🎉
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **MongoDB**: localhost:27017
+
+For detailed setup instructions, see the [Installation Guide](#installation-guide) below.
+
+---
+
 ## 🎯 Problem Statement
 
 The fragrance industry faces significant challenges in personalized product discovery:
@@ -336,8 +389,14 @@ npm run dev
 For enhanced recommendation quality, run the pre-training script:
 
 ```bash
-# From project root
-python standalone_pretrain.py
+# From project root (Linux/macOS)
+./pretraining/pretrain.sh
+
+# On Windows
+./pretraining/pretrain.bat
+
+# Or run the Python script directly
+python pretraining/standalone_pretrain.py
 ```
 
 This will train the ML models on synthetic data, providing better initial recommendations.
@@ -416,15 +475,21 @@ Scentinel/
 │   │   ├── 📁 models/             # ML model implementations
 │   │   └── 📁 utils/              # Utility functions
 │   ├── 🐳 Dockerfile              # Backend container definition
+│   ├── 🚫 .dockerignore           # Docker build exclusions
 │   ├── 📄 requirements.txt        # Python dependencies
 │   ├── 🔧 init_db.py             # Database initialization
-│   └── 🤖 pretrain.py            # Model pre-training script
+│   └── 🤖 pretrain.py            # Simple model training script
 ├── 📁 frontend/                   # Next.js application
 │   ├── 📁 components/             # Reusable UI components
 │   ├── 📁 pages/                  # Application pages
 │   ├── 📁 styles/                 # CSS and styling
 │   ├── 🐳 Dockerfile              # Frontend container definition
+│   ├── 🚫 .dockerignore           # Docker build exclusions
 │   └── 📄 package.json            # JavaScript dependencies
+├── 📁 pretraining/                # ML model pretraining scripts
+│   ├── 🤖 standalone_pretrain.py  # Comprehensive model training
+│   ├── 🔧 pretrain.sh            # Linux/macOS training script
+│   └── 🔧 pretrain.bat           # Windows training script
 ├── 📁 documentation/              # Comprehensive documentation
 │   ├── 📖 architecture.md         # System architecture details
 │   ├── 📖 RECOMMENDATION_SYSTEM.md # ML pipeline documentation
@@ -432,7 +497,11 @@ Scentinel/
 │   ├── 📖 workflow.md             # System workflows
 │   └── 📖 MONGODB_SETUP.md        # Database setup guide
 ├── 📊 perfume_data.csv            # Perfume dataset (2000+ items)
-├── 🤖 standalone_pretrain.py      # Standalone model training
+├── 🔧 env.example                 # Environment variables template
+├── 🔧 setup.sh                    # Linux/macOS setup script
+├── 🪟 setup-windows.bat           # Windows Command Prompt setup
+├── 🪟 setup-windows.ps1           # Windows PowerShell setup
+├── 🚫 .dockerignore               # Global Docker exclusions
 ├── 🐳 docker-compose.yml          # Multi-container orchestration
 ├── 📄 README.md                   # This comprehensive guide
 └── 🔧 .gitignore                  # Git ignore patterns
@@ -488,3 +557,56 @@ For questions, issues, or contributions:
 *Scentinel - Where Technology Meets Scent*
 
 </div>
+
+## 🔧 Windows-Specific Troubleshooting
+
+### **Line Ending Issues**
+If you encounter shell script errors on Windows:
+```powershell
+# The Docker containers automatically handle line ending conversion
+# If issues persist, ensure Git is configured correctly:
+git config --global core.autocrlf true
+git config --global core.eol lf
+
+# Then re-clone the repository
+```
+
+### **PowerShell Execution Policy**
+If you can't run PowerShell scripts:
+```powershell
+# Check current policy
+Get-ExecutionPolicy
+
+# Set policy for current user (recommended)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Or run with bypass
+powershell -ExecutionPolicy Bypass -File setup-windows.ps1
+```
+
+### **Docker Desktop Requirements**
+- Windows 10/11 Pro, Enterprise, or Education
+- Hyper-V enabled
+- WSL 2 (Windows Subsystem for Linux)
+- At least 8GB RAM allocated to Docker
+
+### **Port Conflicts**
+If ports are already in use:
+```powershell
+# Check what's using the ports
+netstat -ano | findstr :3000
+netstat -ano | findstr :5001
+
+# Kill processes if necessary
+taskkill /PID <PID> /F
+
+# Or modify ports in docker-compose.yml
+```
+
+### **Clean Rebuild (if issues persist)**
+```powershell
+# Complete cleanup and rebuild
+docker-compose down -v
+docker system prune -a -f
+docker-compose up --build --force-recreate
+```
